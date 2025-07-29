@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ddg-search-js": {
+      "command": "node",
+      "args": ["path/to/duckduckgo-websearch/build/index.js"]
+    }
+  }
+}

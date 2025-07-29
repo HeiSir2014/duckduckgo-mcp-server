@@ -1,0 +1,67 @@
+{
+  "name": "duckduckgo-websearch",
+  "version": "0.1.2",
+  "description": "MCP Server for searching via DuckDuckGo (Node.js version)",
+  "main": "build/index.js",
+  "bin": {
+    "duckduckgo-websearch": "build/index.js",
+    "ddg-websearch": "build/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node build/index.js",
+    "test:api": "tsx test-api.ts",
+    "test:debug": "tsx test-debug.ts",
+    "clean": "rimraf build",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run clean && npm run build",
+    "publish:check": "node scripts/publish.js",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor",
+    "version:major": "npm version major"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "duckduckgo",
+    "search",
+    "ai",
+    "llm"
+  ],
+  "author": {
+    "name": "HeiSir2014",
+    "email": "heisir21@163.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "cheerio": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "rimraf": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "files": [
+    "build/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HeiSir2014/duckduckgo-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HeiSir2014/duckduckgo-mcp-server/issues"
+  },
+  "homepage": "https://github.com/HeiSir2014/duckduckgo-mcp-server"
+}
