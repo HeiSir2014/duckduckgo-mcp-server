@@ -1,12 +1,6 @@
-# DuckDuckGo Search MCP Server
+# DuckDuckGo Search MCP Server (Node.js/TypeScript)
 
-[![smithery badge](https://smithery.ai/badge/@nickclyde/duckduckgo-mcp-server)](https://smithery.ai/server/@nickclyde/duckduckgo-mcp-server)
-
-A Model Context Protocol (MCP) server that provides web search capabilities through DuckDuckGo, with additional features for content fetching and parsing.
-
-<a href="https://glama.ai/mcp/servers/phcus2gcpn">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/phcus2gcpn/badge" alt="DuckDuckGo Server MCP server" />
-</a>
+A Model Context Protocol (MCP) server that provides web search capabilities through DuckDuckGo, with additional features for content fetching and parsing. This is the Node.js/TypeScript version of the original Python implementation.
 
 ## Features
 
@@ -15,26 +9,51 @@ A Model Context Protocol (MCP) server that provides web search capabilities thro
 - **Rate Limiting**: Built-in protection against rate limits for both search and content fetching
 - **Error Handling**: Comprehensive error handling and logging
 - **LLM-Friendly Output**: Results formatted specifically for large language model consumption
+- **TypeScript**: Full TypeScript support with type definitions
+- **Global CLI**: Available as a global npm package
 
 ## Installation
 
-### Installing via Smithery
-
-To install DuckDuckGo Search Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@nickclyde/duckduckgo-mcp-server):
+### Global Installation (Recommended)
 
 ```bash
-npx -y @smithery/cli install @nickclyde/duckduckgo-mcp-server --client claude
+# Install globally via npm
+npm install -g duckduckgo-websearch
+
+# Or using pnpm
+pnpm add -g duckduckgo-websearch
+
+# Or using yarn
+yarn global add duckduckgo-websearch
 ```
 
-### Installing via `uv`
+After global installation, you can use the following commands:
+- `duckduckgo-mcp-server`
+- `ddg-mcp-server` (short alias)
 
-Install directly from PyPI using `uv`:
+### Local Installation
 
 ```bash
-uv pip install duckduckgo-mcp-server
+# Clone and install locally
+git clone https://github.com/HeiSir2014/duckduckgo-mcp-server
+cd duckduckgo-mcp-server
+npm install
+npm run build
 ```
 
 ## Usage
+
+### Global Usage
+
+After global installation, you can run the server directly:
+
+```bash
+# Start the server
+duckduckgo-websearch
+
+# Or using the short alias
+ddg-websearch
+```
 
 ### Running with Claude Desktop
 
@@ -43,16 +62,26 @@ uv pip install duckduckgo-mcp-server
    - On macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
    - On Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-Add the following configuration:
-
+#### For Global Installation:
 ```json
 {
-    "mcpServers": {
-        "ddg-search": {
-            "command": "uvx",
-            "args": ["duckduckgo-mcp-server"]
-        }
+  "mcpServers": {
+    "ddg-search": {
+      "command": "npx duckduckgo-websearch"
     }
+  }
+}
+```
+
+#### For Local Installation:
+```json
+{
+  "mcpServers": {
+    "ddg-search": {
+      "command": "node",
+      "args": ["path/to/duckduckgo-mcp-server/build/index.js"]
+    }
+  }
 }
 ```
 
@@ -60,21 +89,31 @@ Add the following configuration:
 
 ### Development
 
-For local development, you can use the MCP CLI:
+For local development:
 
 ```bash
-# Run with the MCP Inspector
-mcp dev server.py
+# Install dependencies
+npm install
 
-# Install locally for testing with Claude Desktop
-mcp install server.py
+# Build the project
+npm run build
+
+# Run in development mode
+npm run dev
+
+# Start the built server
+npm start
+
+# Run tests
+npm test
 ```
+
 ## Available Tools
 
 ### 1. Search Tool
 
-```python
-async def search(query: str, max_results: int = 10) -> str
+```typescript
+async function search(query: string, max_results?: number): Promise<string>
 ```
 
 Performs a web search on DuckDuckGo and returns formatted results.
@@ -88,14 +127,15 @@ Formatted string containing search results with titles, URLs, and snippets.
 
 ### 2. Content Fetching Tool
 
-```python
-async def fetch_content(url: str) -> str
+```typescript
+async function fetch_content(url: string, max_length?: number): Promise<string>
 ```
 
 Fetches and parses content from a webpage.
 
 **Parameters:**
 - `url`: The webpage URL to fetch content from
+- `max_length`: Maximum content length to return (default: 8000)
 
 **Returns:**
 Cleaned and formatted text content from the webpage.
@@ -118,8 +158,53 @@ Cleaned and formatted text content from the webpage.
 ### Error Handling
 
 - Comprehensive error catching and reporting
-- Detailed logging through MCP context
 - Graceful degradation on rate limits or timeouts
+
+## Technical Details
+
+### Dependencies
+
+- `@modelcontextprotocol/sdk`: MCP SDK for Node.js
+- `cheerio`: Server-side jQuery implementation for HTML parsing
+- Node.js 内置 `fetch` API：用于 HTTP 请求（无需额外依赖）
+
+### Architecture
+
+The server is built using the MCP SDK and consists of several key components:
+
+- **DuckDuckGoSearcher**: Handles search requests with rate limiting
+- **WebContentFetcher**: Fetches and parses webpage content
+- **RateLimiter**: Manages request rate limiting
+- **Main Server**: Integrates everything and handles MCP protocol
+
+## Publishing (For Maintainers)
+
+### Version Management
+
+```bash
+# Update version
+npm run version:patch  # 0.1.1 -> 0.1.2
+npm run version:minor  # 0.1.1 -> 0.2.0  
+npm run version:major  # 0.1.1 -> 1.0.0
+```
+
+### Publishing to npm
+
+```bash
+# Check publish readiness
+npm run publish:check
+
+# Publish (after version update)
+npm publish
+```
+
+### Pre-publish Checklist
+
+- [ ] All tests pass (`npm test`)
+- [ ] Build succeeds (`npm run build`)
+- [ ] Version updated (`npm version [patch|minor|major]`)
+- [ ] README updated
+- [ ] CHANGELOG updated
 
 ## Contributing
 
@@ -129,7 +214,20 @@ Issues and pull requests are welcome! Some areas for potential improvement:
 - Enhanced content parsing options
 - Caching layer for frequently accessed content
 - Additional rate limiting strategies
+- Better error recovery mechanisms
 
 ## License
 
 This project is licensed under the MIT License.
+
+## Comparison with Python Version
+
+This Node.js/TypeScript version provides the same functionality as the original Python version with the following benefits:
+
+- **Type Safety**: Full TypeScript support with compile-time type checking
+- **Performance**: Generally faster startup and execution times
+- **Ecosystem**: Access to the extensive npm ecosystem
+- **Compatibility**: Better integration with Node.js-based toolchains
+- **Global CLI**: Easy global installation and usage
+
+The API and behavior are designed to be identical to the Python version, making it a drop-in replacement.

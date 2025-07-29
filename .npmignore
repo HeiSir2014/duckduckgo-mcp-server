@@ -1,0 +1,48 @@
+# Source files (only build/ should be published)
+src/
+*.ts
+!*.d.ts
+
+# Development files
+.cursor/
+test.js
+scripts/
+example/
+
+# Git and version control
+.git/
+.gitignore
+
+# Development dependencies and config
+tsconfig.json
+.env*
+
+# Documentation (except README.md and LICENSE which are in package.json files array)
+docs/
+*.md
+!README.md
+!LICENSE
+
+# Logs and temp files
+logs/
+*.log
+temp/
+tmp/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing and coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Python code (original version)
+python-code/
