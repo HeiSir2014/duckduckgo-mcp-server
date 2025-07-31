@@ -11,6 +11,8 @@ A Model Context Protocol (MCP) server that provides web search capabilities thro
 - **LLM-Friendly Output**: Results formatted specifically for large language model consumption
 - **TypeScript**: Full TypeScript support with type definitions
 - **Global CLI**: Available as a global npm package
+- **Custom Headers**: Referer、Origin...etc
+- **Zero Click Results**: eg: search `ip`
 
 ## Installation
 
@@ -28,8 +30,10 @@ yarn global add duckduckgo-websearch
 ```
 
 After global installation, you can use the following commands:
-- `duckduckgo-mcp-server`
-- `ddg-mcp-server` (short alias)
+- `npx duckduckgo-websearch`
+- `npx ddg-websearch`
+- `duckduckgo-websearch`
+- `ddg-websearch` (short alias)
 
 ### Local Installation
 
@@ -49,6 +53,12 @@ After global installation, you can run the server directly:
 
 ```bash
 # Start the server
+npx duckduckgo-websearch
+
+# Or using the short alias
+npx ddg-websearch
+
+# or 
 duckduckgo-websearch
 
 # Or using the short alias
