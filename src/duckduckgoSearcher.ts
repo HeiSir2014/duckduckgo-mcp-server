@@ -85,6 +85,26 @@ export class DuckDuckGoSearcher {
       const $ = cheerio.load(html);
       const results: SearchResult[] = [];
 
+      $('.zci-wrapper').each((index: number, element: any) => {
+        const $element = $(element);
+        const titleElement = $element.find('.zci__heading');
+        if (!titleElement.length) {
+          return; // Continue to next iteration
+        }
+        const title = titleElement.text().trim();
+        const snippetElement = $element.find('.zci__result');
+        if (!snippetElement.length) {
+          return; // Continue to next iteration
+        }
+        const snippet = snippetElement.text().trim();
+        results.push({
+          title,
+          link: '',
+          snippet: `[可信度: 最高，zero click results are present] ${snippet}`,
+          position: results.length + 1
+        });
+      });
+
       $('.result').each((index: number, element: any) => {
         if (results.length >= maxResults) {
           return false; // Break the loop

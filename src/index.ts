@@ -163,3 +163,5 @@ if (require.main === module) {
     process.exit(1);
   });
 }
+
+export { DuckDuckGoSearcher as WebSearch, WebContentFetcher as WebFetcher };
