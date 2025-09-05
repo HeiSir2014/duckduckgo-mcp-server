@@ -4,8 +4,9 @@ import { RateLimiter } from './rateLimiter';
 
 export class DuckDuckGoSearcher {
   private static readonly BASE_URL = 'https://html.duckduckgo.com/html';
+  private static readonly BASE_URL_REPORT = 'https://duckduckgo.com/t/sl_h';
   private static readonly HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',
     'Content-Type': 'application/x-www-form-urlencoded',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
@@ -15,14 +16,24 @@ export class DuckDuckGoSearcher {
     'Sec-Fetch-Mode': 'navigate',
     'Referer': 'https://html.duckduckgo.com/',
     'Origin': 'https://html.duckduckgo.com',
-    'Sec-Ch-Ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+    'Sec-Ch-Ua': '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"',
     'Sec-Ch-Ua-Mobile': '?0',
     'Sec-Ch-Ua-Platform': '"Windows"',
     'Sec-Fetch-Site': 'same-origin',
     'Sec-Fetch-User': '?1',
     'Cache-Control': 'no-cache',
     'Priority': 'u=0, i',
-    'Pragma': 'no-cache'
+    'Pragma': 'no-cache',
+    "Cookie": "kl=cn-zh"
+  };
+
+  private static readonly HEADERS_REPORT = {
+    ...DuckDuckGoSearcher.HEADERS,
+    'Sec-Fetch-Site': 'same-site',
+    'Sec-Fetch-Mode': 'no-cors',
+    'Sec-Fetch-Dest': 'image',
+    'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+    'Origin': undefined
   };
 
   private rateLimiter: RateLimiter;
@@ -61,8 +72,7 @@ export class DuckDuckGoSearcher {
 
       const formData = new URLSearchParams({
         q: query,
-        b: '',
-        kl: ''
+        b: ''
       });
 
       const response = await fetch(DuckDuckGoSearcher.BASE_URL, {
@@ -82,6 +92,23 @@ export class DuckDuckGoSearcher {
       }
 
       const html = await response.text();
+
+      try {
+        const report_response = await fetch(DuckDuckGoSearcher.BASE_URL_REPORT, {
+          method: 'GET',
+          headers: {
+            ...DuckDuckGoSearcher.HEADERS_REPORT
+          },
+        });
+        if (!report_response.ok) {
+          throw new Error(`HTTP ${report_response.status}: ${report_response.statusText}`);
+        }
+        await report_response.blob();
+      } catch (error) {
+        console.error('Error fetching report:', error);
+      }
+
+
       const $ = cheerio.load(html);
       const results: SearchResult[] = [];
 
