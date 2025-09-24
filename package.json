@@ -12,8 +12,8 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node build/index.js",
-    "test:api": "tsx test-api.ts",
-    "test:debug": "tsx test-debug.ts",
+    "test:fetch": "tsx example/fetch-test.ts",
+    "test:fetch:debug": "tsx --inspect-brk example/fetch-test.ts",
     "clean": "rimraf build",
     "prepare": "npm run build",
     "prepublishOnly": "npm run clean && npm run build",
@@ -36,7 +36,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.5",
+    "@modelcontextprotocol/sdk": "^1.18.1",
     "cheerio": "^1.1.2"
   },
   "devDependencies": {
