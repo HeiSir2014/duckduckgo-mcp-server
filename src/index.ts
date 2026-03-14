@@ -165,3 +165,4 @@ if (require.main === module) {
 }
 
 export { DuckDuckGoSearcher as WebSearch, WebContentFetcher as WebFetcher };
+export { SearchError, SearchResult, SearchOptions } from './types';
