@@ -12,6 +12,7 @@
     "build": "tsc",
     "dev": "bun src/index.ts",
     "start": "bun build/index.js",
+    "serve": "bun src/httpServer.ts",
     "test:fetch": "bun example/fetch-test.ts",
     "test:fetch:debug": "bun --inspect-brk example/fetch-test.ts",
     "clean": "rm -rf build",
