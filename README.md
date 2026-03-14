@@ -1,243 +1,233 @@
-# DuckDuckGo Search MCP Server (Node.js/TypeScript)
+# DuckDuckGo Search MCP Server
 
-A Model Context Protocol (MCP) server that provides web search capabilities through DuckDuckGo, with additional features for content fetching and parsing. This is the Node.js/TypeScript version of the original Python implementation.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that provides web search and content fetching via DuckDuckGo. No API key required.
 
 ## Features
 
-- **Web Search**: Search DuckDuckGo with advanced rate limiting and result formatting
-- **Content Fetching**: Retrieve and parse webpage content with intelligent text extraction
-- **Rate Limiting**: Built-in protection against rate limits for both search and content fetching
-- **Error Handling**: Comprehensive error handling and logging
-- **LLM-Friendly Output**: Results formatted specifically for large language model consumption
-- **TypeScript**: Full TypeScript support with type definitions
-- **Global CLI**: Available as a global npm package
-- **Custom Headers**: Referer、Origin...etc
-- **Zero Click Results**: eg: search `ip`
+- **Web Search** — Multi-page results (supports 10 ~ 100+ results via automatic pagination)
+- **Content Fetching** — Fetch and parse any webpage to clean text
+- **Bot Detection & Retry** — Automatically retries up to 3 times on DDG bot challenges
+- **Session Cookie Jar** — Persists DDG session cookies in-memory across requests
+- **Advanced Query Syntax** — Full support for DDG/Google-style operators (`site:`, `OR`, `intitle:`, etc.)
+- **Zero-Click Results** — Instant answer cards (e.g. search `ip`, `weather`)
+- **Zero Dependencies at Runtime** — Only `cheerio` + `@modelcontextprotocol/sdk`
+- **Node.js & Bun** — Works with both runtimes (Node ≥ 18)
+
+---
 
 ## Installation
 
-### Global Installation (Recommended)
+### As MCP Server (global CLI)
 
 ```bash
-# Install globally via npm
 npm install -g duckduckgo-websearch
-
-# Or using pnpm
-pnpm add -g duckduckgo-websearch
-
-# Or using yarn
-yarn global add duckduckgo-websearch
-```
-
-After global installation, you can use the following commands:
-- `npx duckduckgo-websearch`
-- `npx ddg-websearch`
-- `duckduckgo-websearch`
-- `ddg-websearch` (short alias)
-
-### Local Installation
-
-```bash
-# Clone and install locally
-git clone https://github.com/HeiSir2014/duckduckgo-mcp-server
-cd duckduckgo-mcp-server
-npm install
-npm run build
-```
-
-## Usage
-
-### Global Usage
-
-After global installation, you can run the server directly:
-
-```bash
-# Start the server
+# or
 npx duckduckgo-websearch
-
-# Or using the short alias
-npx ddg-websearch
-
-# or 
-duckduckgo-websearch
-
-# Or using the short alias
-ddg-websearch
 ```
 
-### Running with Claude Desktop
+### As npm Library
 
-1. Download [Claude Desktop](https://claude.ai/download)
-2. Create or edit your Claude Desktop configuration:
-   - On macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - On Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+```bash
+npm install duckduckgo-websearch
+```
 
-#### For Global Installation:
+---
+
+## MCP Server Usage
+
+### Claude Desktop
+
+Edit your Claude Desktop config:
+
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
 ```json
 {
   "mcpServers": {
     "ddg-search": {
-      "command": "npx duckduckgo-websearch"
+      "command": "npx",
+      "args": ["duckduckgo-websearch"]
     }
   }
 }
 ```
 
-#### For Local Installation:
+Or with a local build:
+
 ```json
 {
   "mcpServers": {
     "ddg-search": {
       "command": "node",
-      "args": ["path/to/duckduckgo-mcp-server/build/index.js"]
+      "args": ["/path/to/duckduckgo-mcp-server/build/index.js"]
     }
   }
 }
 ```
 
-3. Restart Claude Desktop
+### Other MCP Clients
 
-### Development
+Any MCP-compatible client (Cursor, Cline, Continue, etc.) can connect via stdio transport using the same command above.
 
-For local development:
+---
+
+## MCP Tools
+
+### `search`
+
+Search DuckDuckGo and return paginated results.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `query` | `string` | required | Search query. Supports advanced syntax (see below) |
+| `max_results` | `integer` | `25` | Number of results to return. Triggers automatic pagination when > 10 |
+
+**Advanced Query Syntax** (DDG supports Google-style operators):
+
+| Syntax | Example | Effect |
+|--------|---------|--------|
+| `site:domain` | `site:github.com python` | Restrict to a domain |
+| `site:a.com OR site:b.com` | `site:docs.python.org OR site:stackoverflow.com` | Multiple domains |
+| `"exact phrase"` | `"model context protocol"` | Exact match |
+| `-word` | `python -snake` | Exclude keyword |
+| `intitle:word` | `intitle:tutorial python` | Match in page title |
+| `filetype:ext` | `filetype:pdf machine learning` | Filter by file type |
+| `OR` / `AND` | `python OR javascript async` | Boolean operators |
+
+**Response format:**
+
+```
+Found 25 search results:
+
+1. Page Title
+   URL: https://example.com/page
+   Summary: Brief description of the page content...
+
+2. ...
+```
+
+---
+
+### `fetch_content`
+
+Fetch and parse a webpage to clean, LLM-readable text.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | `string` | required | Webpage URL to fetch |
+| `max_content_length` | `integer` | `8000` | Maximum characters to return |
+
+---
+
+## Library Usage (Node.js / Bun)
+
+```typescript
+import { WebSearch, WebFetcher } from 'duckduckgo-websearch';
+
+// Search
+const searcher = new WebSearch();
+
+// Basic search — returns up to 10 results (1 page)
+const results = await searcher.search('claude anthropic');
+
+// Request more results — auto-paginates across multiple DDG pages
+const results = await searcher.search('python tutorial', { maxResults: 50 });
+
+// Advanced query syntax works natively in the query string
+const results = await searcher.search('site:github.com mcp server typescript');
+const results = await searcher.search('site:docs.python.org OR site:realpython.com async await');
+
+// Format for LLM consumption
+console.log(searcher.formatResultsForLLM(results));
+
+// Fetch webpage content
+const fetcher = new WebFetcher();
+const content = await fetcher.fetchAndParse('https://example.com', 8000);
+```
+
+### SearchResult type
+
+```typescript
+interface SearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  position: number;
+}
+```
+
+### Error handling
+
+```typescript
+import { WebSearch, SearchError } from 'duckduckgo-websearch';
+
+try {
+  const results = await searcher.search('query');
+} catch (err) {
+  if (err instanceof SearchError) {
+    console.error(err.code); // 'BOT_DETECTED' | 'HTTP_ERROR' | 'TIMEOUT' | 'UNKNOWN'
+    console.error(err.message);
+  }
+}
+```
+
+`SearchError` codes:
+
+| Code | Meaning |
+|------|---------|
+| `BOT_DETECTED` | DDG bot challenge triggered after 3 retry attempts |
+| `HTTP_ERROR` | Non-2xx HTTP response |
+| `TIMEOUT` | Request timed out (30s limit) |
+| `UNKNOWN` | Unexpected failure |
+
+---
+
+## Development
 
 ```bash
-# Install dependencies
+git clone https://github.com/HeiSir2014/duckduckgo-mcp-server
+cd duckduckgo-mcp-server
+
 npm install
+npm run build          # compile TypeScript → build/
 
-# Build the project
-npm run build
+# Run example test (Bun)
+bun example/test.ts
 
-# Run in development mode
-npm run dev
-
-# Start the built server
-npm start
-
-# Run tests
-npm test
+# Run with Node
+node -e "require('./build/index.js')"
 ```
 
-## Available Tools
+---
 
-### 1. Search Tool
+## Architecture
 
-```typescript
-async function search(query: string, max_results?: number): Promise<string>
+```
+src/
+├── index.ts              # MCP server entry, tool definitions
+├── duckduckgoSearcher.ts # Search logic: fetch, bot detection, retry, pagination
+├── cookieJar.ts          # In-memory cookie jar for DDG session persistence
+├── webContentFetcher.ts  # Webpage fetch + text extraction
+├── rateLimiter.ts        # Token-bucket rate limiter
+└── types.ts              # Shared types (SearchResult, SearchOptions, SearchError)
 ```
 
-Performs a web search on DuckDuckGo and returns formatted results.
+**Pagination mechanism** — DDG HTML endpoint returns 10 results per page with a `vqd` session token embedded in the "Next" form. When `maxResults > 10`, the searcher chains page requests using `vqd` and the form parameters (`s`, `dc`) extracted from each page's nav-link.
 
-**Parameters:**
-- `query`: Search query string
-- `max_results`: Maximum number of results to return (default: 10)
+**Bot detection** — On each page fetch the searcher checks for missing result containers (`.serp__results`) and known challenge keywords. On detection it awaits the report ping (`/t/sl_h`) which warms the session, then retries. After 3 failures it throws `SearchError('BOT_DETECTED')`.
 
-**Returns:**
-Formatted string containing search results with titles, URLs, and snippets.
+---
 
-### 2. Content Fetching Tool
+## Rate Limits
 
-```typescript
-async function fetch_content(url: string, max_length?: number): Promise<string>
-```
+| Operation | Limit |
+|-----------|-------|
+| Search | 30 requests / minute |
+| Content Fetch | 20 requests / minute |
 
-Fetches and parses content from a webpage.
-
-**Parameters:**
-- `url`: The webpage URL to fetch content from
-- `max_length`: Maximum content length to return (default: 8000)
-
-**Returns:**
-Cleaned and formatted text content from the webpage.
-
-## Features in Detail
-
-### Rate Limiting
-
-- Search: Limited to 30 requests per minute
-- Content Fetching: Limited to 20 requests per minute
-- Automatic queue management and wait times
-
-### Result Processing
-
-- Removes ads and irrelevant content
-- Cleans up DuckDuckGo redirect URLs
-- Formats results for optimal LLM consumption
-- Truncates long content appropriately
-
-### Error Handling
-
-- Comprehensive error catching and reporting
-- Graceful degradation on rate limits or timeouts
-
-## Technical Details
-
-### Dependencies
-
-- `@modelcontextprotocol/sdk`: MCP SDK for Node.js
-- `cheerio`: Server-side jQuery implementation for HTML parsing
-- Node.js 内置 `fetch` API：用于 HTTP 请求（无需额外依赖）
-
-### Architecture
-
-The server is built using the MCP SDK and consists of several key components:
-
-- **DuckDuckGoSearcher**: Handles search requests with rate limiting
-- **WebContentFetcher**: Fetches and parses webpage content
-- **RateLimiter**: Manages request rate limiting
-- **Main Server**: Integrates everything and handles MCP protocol
-
-## Publishing (For Maintainers)
-
-### Version Management
-
-```bash
-# Update version
-npm run version:patch  # 0.1.1 -> 0.1.2
-npm run version:minor  # 0.1.1 -> 0.2.0  
-npm run version:major  # 0.1.1 -> 1.0.0
-```
-
-### Publishing to npm
-
-```bash
-# Check publish readiness
-npm run publish:check
-
-# Publish (after version update)
-npm publish
-```
-
-### Pre-publish Checklist
-
-- [ ] All tests pass (`npm test`)
-- [ ] Build succeeds (`npm run build`)
-- [ ] Version updated (`npm version [patch|minor|major]`)
-- [ ] README updated
-- [ ] CHANGELOG updated
-
-## Contributing
-
-Issues and pull requests are welcome! Some areas for potential improvement:
-
-- Additional search parameters (region, language, etc.)
-- Enhanced content parsing options
-- Caching layer for frequently accessed content
-- Additional rate limiting strategies
-- Better error recovery mechanisms
+---
 
 ## License
 
-This project is licensed under the MIT License.
-
-## Comparison with Python Version
-
-This Node.js/TypeScript version provides the same functionality as the original Python version with the following benefits:
-
-- **Type Safety**: Full TypeScript support with compile-time type checking
-- **Performance**: Generally faster startup and execution times
-- **Ecosystem**: Access to the extensive npm ecosystem
-- **Compatibility**: Better integration with Node.js-based toolchains
-- **Global CLI**: Easy global installation and usage
-
-The API and behavior are designed to be identical to the Python version, making it a drop-in replacement.
+MIT
