@@ -47,13 +47,13 @@ class DuckDuckGoMCPServer {
         tools: [
           {
             name: 'search',
-            description: 'Search DuckDuckGo and return formatted results',
+            description: 'Search DuckDuckGo and return formatted results. Supports advanced query syntax: site:github.com (limit to domain), "exact phrase", -exclude, filetype:pdf, intitle:keyword, OR / AND operators. Examples: "python async site:docs.python.org", "claude site:anthropic.com OR site:github.com"',
             inputSchema: {
               type: 'object',
               properties: {
                 query: {
                   type: 'string',
-                  description: 'The search query string',
+                  description: 'Search query. Supports DuckDuckGo advanced syntax: site:domain.com (restrict to domain), "exact phrase", -word (exclude), OR/AND (combine), intitle:keyword, filetype:pdf. Example: "python tutorial site:docs.python.org OR site:realpython.com"',
                 },
                 max_results: {
                   type: 'integer',
