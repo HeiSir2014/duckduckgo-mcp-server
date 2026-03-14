@@ -27,14 +27,16 @@ export class DuckDuckGoSearcher {
     "Cookie": "kl=cn-zh"
   };
 
-  private static readonly HEADERS_REPORT = {
-    ...DuckDuckGoSearcher.HEADERS,
-    'Sec-Fetch-Site': 'same-site',
-    'Sec-Fetch-Mode': 'no-cors',
-    'Sec-Fetch-Dest': 'image',
-    'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-    'Origin': undefined
-  };
+  private static readonly HEADERS_REPORT: Record<string, string> = (() => {
+    const { Origin: _removed, ...rest } = DuckDuckGoSearcher.HEADERS;
+    return {
+      ...rest,
+      'Sec-Fetch-Site': 'same-site',
+      'Sec-Fetch-Mode': 'no-cors',
+      'Sec-Fetch-Dest': 'image',
+      'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+    };
+  })();
 
   private rateLimiter: RateLimiter;
 
